@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual vs AI Mycorrhizal Colonization Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            border-left: 5px solid #667eea;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .charts-container {
+            padding: 30px;
+        }
+        
+        .chart-section {
+            margin-bottom: 50px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .chart-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 300;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 500px;
+            margin: 20px 0;
+        }
+        
+        .chart-wrapper.small {
+            height: 400px;
+        }
+        
+        .data-table {
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
+        }
+        
+        .difference {
+            font-weight: bold;
+        }
+        
+        .positive {
+            color: #4caf50;
+        }
+        
+        .negative {
+            color: #f44336;
+        }
+        
+        .methodology-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px;
+            color: #856404;
+        }
+        
+        .methodology-note h3 {
+            margin-top: 0;
+            color: #b8860b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mycorrhizal Colonization Analysis</h1>
+            <p>Comparative Study: Manual vs AI Detection Methods</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalSamples">32</div>
+                <div class="stat-label">Total Samples</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="manualAvg">69.8%</div>
+                <div class="stat-label">Manual Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="aiAvg">4.8%</div>
+                <div class="stat-label">AI Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="correlation">-0.076</div>
+                <div class="stat-label">Correlation</div>
+            </div>
+        </div>
+        
+        <div class="methodology-note">
+            <h3>⚠️ Important Observation</h3>
+            <p>There is a significant discrepancy between manual and AI measurements. Manual measurements range from 34% to 95% colonization, while AI measurements range from 1.8% to 7.7%. This suggests the methods may be using different detection criteria, thresholds, or image processing techniques. Further calibration and methodology alignment may be needed.</p>
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-section">
+                <h2 class="chart-title">Scatter Plot: Manual vs AI Colonization %</h2>
+                <div class="chart-wrapper">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2 class="chart-title">Comparative Bar Chart by Image</h2>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2 class="chart-title">Distribution Comparison</h2>
+                <div class="chart-wrapper small">
+                    <canvas id="histogramChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2 class="chart-title">Difference Analysis</h2>
+                <div class="chart-wrapper small">
+                    <canvas id="differenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-table">
+            <h2 class="chart-title">Detailed Data Comparison</h2>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Manual (%)</th>
+                        <th>AI (%)</th>
+                        <th>Difference</th>
+                        <th>% Difference</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Data from the analysis
+        const matchedData = [
+            {image: "IMG1", manual_colonization: 88.888889, ai_colonization: 6.4441680908203125},
+            {image: "IMG2", manual_colonization: 95.3125, ai_colonization: 7.140350341796875},
+            {image: "IMG3", manual_colonization: 76.5625, ai_colonization: 6.3251495361328125},
+            {image: "IMG4", manual_colonization: 70.3125, ai_colonization: 7.698822021484375},
+            {image: "IMG5", manual_colonization: 63.934426, ai_colonization: 4.77752685546875},
+            {image: "IMG6", manual_colonization: 71.875, ai_colonization: 4.981231689453125},
+            {image: "IMG7", manual_colonization: 93.75, ai_colonization: 5.8063507080078125},
+            {image: "IMG8", manual_colonization: 89.0625, ai_colonization: 7.3276519775390625},
+            {image: "IMG10", manual_colonization: 82.8125, ai_colonization: 3.0628204345703125},
+            {image: "IMG11", manual_colonization: 89.0625, ai_colonization: 3.5675048828125},
+            {image: "IMG12", manual_colonization: 67.1875, ai_colonization: 2.585601806640625},
+            {image: "IMG13", manual_colonization: 45.3125, ai_colonization: 3.5915374755859375},
+            {image: "IMG14", manual_colonization: 65.625, ai_colonization: 3.8509368896484375},
+            {image: "IMG15", manual_colonization: 79.6875, ai_colonization: 3.029632568359375},
+            {image: "IMG16", manual_colonization: 52.459016, ai_colonization: 4.0622711181640625},
+            {image: "IMG17", manual_colonization: 70.3125, ai_colonization: 5.8277130126953125},
+            {image: "IMG18", manual_colonization: 82.8125, ai_colonization: 1.8131256103515625},
+            {image: "IMG19", manual_colonization: 93.442623, ai_colonization: 6.01348876953125},
+            {image: "IMG20", manual_colonization: 93.548387, ai_colonization: 6.327056884765625},
+            {image: "IMG21", manual_colonization: 71.875, ai_colonization: 4.6672821044921875},
+            {image: "IMG22", manual_colonization: 51.5625, ai_colonization: 4.2816162109375},
+            {image: "IMG23", manual_colonization: 73.4375, ai_colonization: 5.461883544921875},
+            {image: "IMG24", manual_colonization: 68.75, ai_colonization: 4.5360565185546875},
+            {image: "IMG25", manual_colonization: 62.711864, ai_colonization: 3.4610748291015625},
+            {image: "IMG26", manual_colonization: 59.649123, ai_colonization: 2.07061767578125},
+            {image: "IMG27", manual_colonization: 68.75, ai_colonization: 5.62591552734375},
+            {image: "IMG28", manual_colonization: 60.9375, ai_colonization: 3.1932830810546875},
+            {image: "IMG29", manual_colonization: 68.75, ai_colonization: 5.6854248046875},
+            {image: "IMG30", manual_colonization: 45.3125, ai_colonization: 4.2545318603515625},
+            {image: "IMG31", manual_colonization: 79.032258, ai_colonization: 6.9461822509765625},
+            {image: "IMG32", manual_colonization: 71.929825, ai_colonization: 4.4712066650390625},
+            {image: "IMG33", manual_colonization: 34.42623, ai_colonization: 2.7568817138671875}
+        ];
+
+        // Sort by image number for better visualization
+        matchedData.sort((a, b) => {
+            const numA = parseInt(a.image.replace('IMG', ''));
+            const numB = parseInt(b.image.replace('IMG', ''));
+            return numA - numB;
+        });
+
+        // Calculate statistics
+        const manualValues = matchedData.map(d => d.manual_colonization);
+        const aiValues = matchedData.map(d => d.ai_colonization);
+        
+        const manualAvg = manualValues.reduce((a, b) => a + b) / manualValues.length;
+        const aiAvg = aiValues.reduce((a, b) => a + b) / aiValues.length;
+        
+        // Calculate correlation
+        function calculateCorrelation(x, y) {
+            const n = x.length;
+            const sumX = x.reduce((a, b) => a + b, 0);
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+            const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+            
+            const numerator = n * sumXY - sumX * sumY;
+            const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            return numerator / denominator;
+        }
+        
+        const correlation = calculateCorrelation(manualValues, aiValues);
+        
+        // Update statistics display
+        document.getElementById('manualAvg').textContent = manualAvg.toFixed(1) + '%';
+        document.getElementById('aiAvg').textContent = aiAvg.toFixed(1) + '%';
+        document.getElementById('correlation').textContent = correlation.toFixed(3);
+
+        // Chart configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: true, color: 'rgba(0,0,0,0.1)' },
+                    ticks: { font: { size: 11 } }
+                },
+                y: {
+                    grid: { display: true, color: 'rgba(0,0,0,0.1)' },
+                    ticks: { font: { size: 11 } }
+                }
+            }
+        };
+
+        // 1. Scatter Plot with Labels
+        const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+        new Chart(scatterCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Manual vs AI Measurements',
+                    data: matchedData.map(d => ({
+                        x: d.manual_colonization,
+                        y: d.ai_colonization,
+                        label: d.image
+                    })),
+                    backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }, {
+                    label: 'Perfect Correlation Line',
+                    data: [{x: 0, y: 0}, {x: 100, y: 100}],
+                    type: 'line',
+                    borderColor: 'rgba(244, 67, 54, 0.8)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Manual Colonization (%)', font: { size: 14, weight: 'bold' } },
+                        min: 0,
+                        max: 100
+                    },
+                    y: {
+                        title: { display: true, text: 'AI Colonization (%)', font: { size: 14, weight: 'bold' } },
+                        min: 0,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    ...chartOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].raw.label || '';
+                            },
+                            label: function(context) {
+                                return [
+                                    `Manual: ${context.parsed.x.toFixed(2)}%`,
+                                    `AI: ${context.parsed.y.toFixed(2)}%`,
+                                    `Difference: ${(context.parsed.x - context.parsed.y).toFixed(2)}%`
+                                ];
+                            }
+                        }
+                    },
+                    datalabels: {
+                        display: true,
+                        color: '#333',
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        },
+                        align: 'top',
+                        offset: 5,
+                        formatter: function(value, context) {
+                            return value.label;
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'pointLabels',
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    chart.data.datasets.forEach((dataset, i) => {
+                        if (i === 0) { // Only label the first dataset (scatter points)
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach((point, index) => {
+                                const data = dataset.data[index];
+                                if (data.label) {
+                                    ctx.fillStyle = '#333';
+                                    ctx.font = 'bold 10px Arial';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.fillText(data.label, point.x, point.y - 8);
+                                }
+                            });
+                        }
+                    });
+                }
+            }]
+        });
+
+        // 2. Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: matchedData.map(d => d.image),
+                datasets: [{
+                    label: 'Manual Method',
+                    data: manualValues,
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'AI Method',
+                    data: aiValues,
+                    backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                    borderColor: 'rgba(118, 75, 162, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Image Samples', font: { size: 14, weight: 'bold' } }
+                    },
+                    y: {
+                        title: { display: true, text: 'Colonization (%)', font: { size: 14, weight: 'bold' } },
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // 3. Histogram
+        const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+        
+        // Create histogram bins
+        function createHistogram(data, bins = 10) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / bins;
+            const histogram = new Array(bins).fill(0);
+            const labels = [];
+            
+            for (let i = 0; i < bins; i++) {
+                const start = min + i * binWidth;
+                const end = start + binWidth;
+                labels.push(`${start.toFixed(1)}-${end.toFixed(1)}`);
+                
+                data.forEach(value => {
+                    if (value >= start && (value < end || (i === bins - 1 && value === end))) {
+                        histogram[i]++;
+                    }
+                });
+            }
+            
+            return { histogram, labels };
+        }
+        
+        const manualHist = createHistogram(manualValues);
+        const aiHist = createHistogram(aiValues);
+        
+        new Chart(histogramCtx, {
+            type: 'bar',
+            data: {
+                labels: manualHist.labels,
+                datasets: [{
+                    label: 'Manual Method Distribution',
+                    data: manualHist.histogram,
+                    backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'AI Method Distribution',
+                    data: aiHist.histogram,
+                    backgroundColor: 'rgba(118, 75, 162, 0.6)',
+                    borderColor: 'rgba(118, 75, 162, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Colonization % Range', font: { size: 14, weight: 'bold' } }
+                    },
+                    y: {
+                        title: { display: true, text: 'Frequency', font: { size: 14, weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        // 4. Difference Chart
+        const differenceCtx = document.getElementById('differenceChart').getContext('2d');
+        const differences = matchedData.map(d => d.manual_colonization - d.ai_colonization);
+        
+        new Chart(differenceCtx, {
+            type: 'bar',
+            data: {
+                labels: matchedData.map(d => d.image),
+                datasets: [{
+                    label: 'Difference (Manual - AI)',
+                    data: differences,
+                    backgroundColor: differences.map(d => d > 0 ? 'rgba(76, 175, 80, 0.8)' : 'rgba(244, 67, 54, 0.8)'),
+                    borderColor: differences.map(d => d > 0 ? 'rgba(76, 175, 80, 1)' : 'rgba(244, 67, 54, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Image Samples', font: { size: 14, weight: 'bold' } }
+                    },
+                    y: {
+                        title: { display: true, text: 'Difference (%)', font: { size: 14, weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        // Populate data table
+        const tableBody = document.getElementById('tableBody');
+        matchedData.forEach(d => {
+            const difference = d.manual_colonization - d.ai_colonization;
+            const percentDifference = ((difference / d.manual_colonization) * 100);
+            
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td><strong>${d.image}</strong></td>
+                <td>${d.manual_colonization.toFixed(2)}</td>
+                <td>${d.ai_colonization.toFixed(2)}</td>
+                <td class="difference ${difference > 0 ? 'positive' : 'negative'}">${difference.toFixed(2)}</td>
+                <td class="difference ${difference > 0 ? 'positive' : 'negative'}">${percentDifference.toFixed(1)}%</td>
+            `;
+        });
+    </script>
+</body>
+</html>
